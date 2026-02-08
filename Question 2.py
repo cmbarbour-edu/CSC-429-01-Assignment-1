@@ -6,6 +6,7 @@ class Node:
         self.value = value
         self.neighbors = []
         self.open = True # To indicate if the node is able to be traversed
+        self.depth = 0 # To keep track of the depth in the DLS algorithm
 
     def set_closed(self):
         self.open = False
@@ -28,12 +29,13 @@ class Graph:
         while stack:
             current = stack.pop()
             visited.append(current) # Mark node as visited
-            print("Visited node ", current.value)
+            print("Visited node ", current.value, " at depth ", current.depth)
             if current == end_node:
                 return self.backtrack_path(parent, start_node, end_node)
-            if (abs(start_node.value[0] - current.value[0]) + abs(start_node.value[1] - current.value[1]) < depth_limit):
+            if (current.depth < depth_limit):
                 for neighbor in current.neighbors:
                     if neighbor not in visited and neighbor.open:
+                        neighbor.depth = current.depth + 1
                         stack.append(neighbor)
                         parent[neighbor] = current
             else:

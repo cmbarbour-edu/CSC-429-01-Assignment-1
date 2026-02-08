@@ -1,5 +1,7 @@
 from collections import defaultdict
 from collections import deque
+from memory_profiler import memory_usage
+from multiprocessing import freeze_support
 
 class Node:
     def __init__(self, value):
@@ -44,16 +46,16 @@ class Graph:
         parent = {}
         queue.append(start_node)
         while queue:
-            node = queue.popleft()
-            visited.append(node) # Mark node as visited
-            print("Visited node ", node.value)
-            if node == end_node:
+            current = queue.popleft()
+            visited.append(current) # Mark node as visited
+            print("Visited node ", current.value)
+            if current == end_node:
                 return self.backtrack_path(parent, start_node, end_node)
             else:
-                for neighbor in node.neighbors:
+                for neighbor in current.neighbors:
                     if neighbor.open and neighbor not in visited: # Only traverse if the node is open and not visited yet
                         queue.append(neighbor)
-                        parent[neighbor] = node
+                        parent[neighbor] = current
 
     def backtrack_path(self, parent, start, end_node):
         path = [end_node]
@@ -88,24 +90,43 @@ for closed_node in [(1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (3, 2), (3, 3), (3, 
 # Establish start and end nodes
 start_node = nodes[(7, 1)]
 end_node = nodes[(4, 4)]
-# Do DFS and BFS
-print("Performing DFS:")
-result_dfs = graph.dfs(start_node, end_node)
-path = ""
-print("DFS Path:")
-for each in result_dfs:
-    if each != result_dfs[-1]:
-        path += str(each.value) + " -> "
-    else:
-        path += str(each.value)
-print(path + "\n")
-print("Performing BFS:")
-result_bfs = graph.bfs(start_node, end_node)
-path = ""
-print("BFS Path:")
-for each in result_bfs:
-    if each != result_bfs[-1]:
-        path += str(each.value) + " -> "
-    else:
-        path += str(each.value)
-print(path)
+
+if __name__ == '__main__':
+    freeze_support()
+
+    # Define memory profiling wrapper
+    def bfs_wrapper():
+        graph.bfs(start_node, end_node)
+        print("BFS complete\n")
+
+    def dfs_wrapper():
+        graph.dfs(start_node, end_node)
+        print("DFS complete\n")
+
+    # Measure memory usage
+    bfs_memory = memory_usage(bfs_wrapper, max_usage=True)
+    dfs_memory = memory_usage(dfs_wrapper, max_usage=True)
+    print("Memory used by BFS: " + str(bfs_memory) + " MiB")
+    print("Memory used by DFS: " + str(dfs_memory) + " MiB\n")
+
+    # Do DFS and BFS
+    print("Performing DFS:")
+    result_dfs = graph.dfs(start_node, end_node)
+    path = ""
+    print("DFS Path:")
+    for each in result_dfs:
+        if each != result_dfs[-1]:
+            path += str(each.value) + " -> "
+        else:
+            path += str(each.value)
+    print(path + "\n")
+    print("Performing BFS:")
+    result_bfs = graph.bfs(start_node, end_node)
+    path = ""
+    print("BFS Path:")
+    for each in result_bfs:
+        if each != result_bfs[-1]:
+            path += str(each.value) + " -> "
+        else:
+            path += str(each.value)
+    print(path)
